@@ -9,14 +9,14 @@ ENV CONSUL_TEMPLATE_FILE=consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.
 
 ADD ${CONSUL_TEMPLATE_BASE}/${CONSUL_TEMPLATE_VERSION}/${CONSUL_TEMPLATE_FILE} .
 
-RUN echo "${CONSUL_TEMPLATE_SHA256SUM} ${CONSUL_TEMPLATE_FILE} | sha256sum -c - \
-    && ${CONSUL_TEMPLATE_FILE} \
+RUN echo "${CONSUL_TEMPLATE_SHA256SUM}  ${CONSUL_TEMPLATE_FILE}" | sha256sum -c - \
+    && unzip ${CONSUL_TEMPLATE_FILE} \
     && mkdir -p /usr/local/bin \
     && mv consul-template /usr/local/bin/consul-template
 
 COPY . /opt/war-runner
-RUN cd /opt/war-runner
+RUN cd /opt/war-runner \
     && mvn clean package \
-    && cp target war-runner.jar .
+    && cp target/war-runner.jar .
 
 WORKDIR /usr/src/app
