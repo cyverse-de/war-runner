@@ -7,7 +7,7 @@ timestamps {
             stage("Build") {
                 checkout scm
 
-                sh "docker build --pull --no-cache --rm -f ${dockerRepo} ."
+                sh "docker build --pull --no-cache --rm -t ${dockerRepo} ."
                 image_sha = sh(
                         returnStdout: true,
                         script: "docker inspect -f '{{ .Config.Image }}' ${dockerRepo}"
