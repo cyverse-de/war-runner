@@ -11,15 +11,26 @@ import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker;
+import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
 
+import sun.security.krb5.Config;
+
 /**
  * @author Dennis Roberts
  */
 public class WarRunner implements Runnable {
+
+    // The container include jar attribute and the pattern to scan.
+    private static final String CONTAINER_INCLUDE_JAR_ATTRIBUTE
+            = "org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern";
+    private static final String CONTAINER_INCLUDE_JAR_PATTERN
+            = ".*/[^/]*servlet-api-[^/]*\\.jar$" + "|"
+            + ".*/javax.servlet.jsp.jstl-.*\\.jar$" + "|"
+            + ".*/[^/]*taglibs.*\\.jar$";
 
     private int port = 8080;
     private String contextPath = "/";
@@ -181,6 +192,16 @@ public class WarRunner implements Runnable {
         webapp.setWar(warPath);
         webapp.addAliasCheck(new AllowSymLinkAliasChecker());
         webapp.setThrowUnavailableOnStartupException(true);
+
+        // Enable the annotation configuration.
+        Configuration.ClassList classList = Configuration.ClassList.setServerDefault(server);
+        classList.addBefore(
+                "org.eclipse.jetty.webapp.JettyWebXmlConfiguration",
+                "org.eclipse.jetty.annotations.AnnotationConfiguration"
+        );
+
+        // Specify the the include JAR pattern for JSP files.
+        webapp.setAttribute(CONTAINER_INCLUDE_JAR_ATTRIBUTE, CONTAINER_INCLUDE_JAR_PATTERN);
 
         // Add the web application to the server.
         server.setHandler(webapp);
